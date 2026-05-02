@@ -51,7 +51,7 @@ def convert_type(pg: str) -> str:
 
 
 def strip_cast(val: str) -> str:
-    return re.sub(r"::[a-z ]+(\[\])?", "", val).strip()
+    return re.sub(r"::[a-zA-Z][a-zA-Z0-9 ]*(\[\])?", "", val).strip()
 
 
 def parse_column_line(raw: str, pk_col: str = "id") -> str | None:
@@ -120,12 +120,16 @@ def parse_column_line(raw: str, pk_col: str = "id") -> str | None:
             remaining = remaining[8:].strip()
         elif up.startswith("DEFAULT"):
             remaining = remaining[7:].strip()
-            m3 = re.match(r"^(.+?)(\s+NOT NULL)?\s*$", remaining, re.DOTALL)
-            if m3:
-                raw_default = m3.group(1).strip()
-                default_val = strip_cast(raw_default)
-                if m3.group(2):
-                    not_null = True
+            # 显式切割 NOT NULL（若存在）
+            nn_match = re.search(r"\s+NOT\s+NULL\s*$", remaining, re.IGNORECASE)
+            if nn_match:
+                raw_default = remaining[:nn_match.start()].strip()
+                not_null = True
+            else:
+                raw_default = remaining.strip()
+            # 去掉换行（single-line default value）
+            raw_default = raw_default.replace("\n", " ").strip()
+            default_val = strip_cast(raw_default)
             remaining = ""
         else:
             break
@@ -145,7 +149,7 @@ def parse_column_line(raw: str, pk_col: str = "id") -> str | None:
 def parse_tables(src: str) -> dict[str, list[str]]:
     tables: dict[str, list[str]] = {}
     for m in re.finditer(
-        r"CREATE TABLE public\.(\w+)\s*\(\n(.*?)\n\);",
+        r"CREATE TABLE public\.(\w+)\s*\([^\n]*\n(.*?)\n\);",
         src, re.DOTALL,
     ):
         body = m.group(2)
@@ -194,7 +198,20 @@ def parse_indexes(src: str) -> dict[str, list[str]]:
         cols = m.group(5)
         if method == "gin":
             continue
-        col_list = ", ".join(f"`{c.strip()}`" for c in cols.split(","))
+
+        def clean_idx_col(c: str) -> str:
+            # 去掉 ASC, DESC, NULLS LAST/FIRST 等修饰词
+            c = re.sub(r"\s+(ASC|DESC|NULLS\s+(LAST|FIRST))\s*$", "", c.strip(), flags=re.IGNORECASE)
+            # 去掉函数表达式（如 lower(email)）——直接跳过含括号的列
+            if "(" in c:
+                return ""
+            return c.strip()
+
+        col_parts = [clean_idx_col(c) for c in cols.split(",")]
+        col_parts = [f"`{c}`" for c in col_parts if c]
+        if not col_parts:
+            continue  # 全是函数表达式，跳过
+        col_list = ", ".join(col_parts)
         stmt = f"CREATE {unique}INDEX `{idx_name}` ON `{table}` ({col_list});"
         idx_map.setdefault(table, []).append(stmt)
     return idx_map
