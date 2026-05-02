@@ -33,9 +33,11 @@ jobs:
         run: go test ./... -timeout 120s
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
+          TESTCONTAINERS_RYUK_DISABLED: "true"
 
   build:
     name: Build
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

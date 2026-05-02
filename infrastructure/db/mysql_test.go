@@ -12,6 +12,9 @@ import (
 )
 
 func TestNewConnection_Ping(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test: requires Docker")
+	}
 	ctx := context.Background()
 
 	container, err := tcmysql.Run(ctx,

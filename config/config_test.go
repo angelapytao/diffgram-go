@@ -1,7 +1,6 @@
 package config_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/angelapytao/diffgram-go/config"
@@ -9,10 +8,10 @@ import (
 )
 
 func TestLoad_Defaults(t *testing.T) {
-	os.Unsetenv("SERVER_PORT")
-	os.Unsetenv("DIFFGRAM_SYSTEM_MODE")
-	os.Unsetenv("RABBITMQ_HOST")
-	os.Unsetenv("RABBITMQ_PORT")
+	t.Setenv("SERVER_PORT", "")
+	t.Setenv("DIFFGRAM_SYSTEM_MODE", "")
+	t.Setenv("RABBITMQ_HOST", "")
+	t.Setenv("RABBITMQ_PORT", "")
 
 	cfg := config.Load()
 
