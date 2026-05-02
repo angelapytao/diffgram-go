@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	tcmysql "github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	tcmysql "github.com/testcontainers/testcontainers-go/modules/mysql"
 
 	diffdb "github.com/angelapytao/diffgram-go/infrastructure/db"
 )
@@ -21,7 +21,7 @@ func TestNewConnection_Ping(t *testing.T) {
 		tcmysql.WithPassword("testpass"),
 	)
 	require.NoError(t, err)
-	t.Cleanup(func() { container.Terminate(ctx) })
+	t.Cleanup(func() { _ = container.Terminate(ctx) })
 
 	dsn, err := container.ConnectionString(ctx, "charset=utf8mb4&parseTime=True&loc=Local")
 	require.NoError(t, err)

@@ -1,0 +1,23 @@
+version: "2"
+
+run:
+  timeout: 5m
+  go: "1.25"
+  tests: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck  # includes gosimple
+    - unused
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - os.Unsetenv
+        - os.Setenv
+
+formatters:
+  enable:
+    - gofmt
