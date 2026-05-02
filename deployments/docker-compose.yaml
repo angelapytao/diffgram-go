@@ -1,0 +1,68 @@
+name: diffgram-go
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: diffgram
+      MYSQL_DATABASE: diffgram
+      MYSQL_USER: diffgram
+      MYSQL_PASSWORD: diffgram
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-udiffgram", "-pdiffgram"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: deployments/api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "diffgram:diffgram@tcp(mysql:3306)/diffgram?charset=utf8mb4&parseTime=True&loc=Local"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      DIFFGRAM_SYSTEM_MODE: sandbox
+      SERVER_PORT: 8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
