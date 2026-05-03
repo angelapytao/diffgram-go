@@ -16,6 +16,7 @@ import (
 	"github.com/angelapytao/diffgram-go/config"
 	diffdb "github.com/angelapytao/diffgram-go/infrastructure/db"
 	infratoken "github.com/angelapytao/diffgram-go/infrastructure/token"
+	"github.com/angelapytao/diffgram-go/interfaces/http/facade"
 	"github.com/angelapytao/diffgram-go/interfaces/http/health"
 	"github.com/angelapytao/diffgram-go/interfaces/http/middleware"
 )
@@ -46,6 +47,7 @@ func main() {
 	r.Use(middleware.Logger(log))
 
 	health.RegisterRoutes(r)
+	facade.RegisterAPIRoutes(r, tokenSvc)
 
 	addr := fmt.Sprintf(":%d", cfg.ServerPort)
 	srv := &http.Server{Addr: addr, Handler: r}

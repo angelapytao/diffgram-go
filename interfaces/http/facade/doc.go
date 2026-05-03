@@ -1,3 +1,2 @@
-// Package facade contains HTTP handlers for the diffgram API.
-// Populated in P3.
+// Package facade contains HTTP handlers and route registration for the diffgram API.
 package facade
