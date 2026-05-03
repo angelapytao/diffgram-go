@@ -14,8 +14,8 @@ import (
 	"github.com/angelapytao/diffgram-go/config"
 	"github.com/angelapytao/diffgram-go/domain/entity"
 	domainservice "github.com/angelapytao/diffgram-go/domain/service"
-	"github.com/angelapytao/diffgram-go/interfaces/http/dto"
 	infratoken "github.com/angelapytao/diffgram-go/infrastructure/token"
+	"github.com/angelapytao/diffgram-go/interfaces/http/dto"
 )
 
 type mockUserRepo struct{ mock.Mock }
