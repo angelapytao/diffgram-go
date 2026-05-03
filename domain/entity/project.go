@@ -33,6 +33,8 @@ type Project struct {
 	PlanID                              *int       `gorm:"column:plan_id"`
 }
 
+func (Project) TableName() string { return "project" }
+
 type WorkingDir struct {
 	Base
 	CreatedTime          *time.Time `gorm:"column:created_time"`
