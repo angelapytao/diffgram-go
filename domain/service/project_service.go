@@ -38,3 +38,7 @@ func (s *ProjectService) ListByOrgID(ctx context.Context, orgID int) ([]*entity.
 func (s *ProjectService) Save(ctx context.Context, project *entity.Project) error {
 	return s.repo.Save(ctx, project)
 }
+
+func (s *ProjectService) ListByUserPrimaryID(ctx context.Context, userID int) ([]*entity.Project, error) {
+	return s.repo.ListByUserPrimaryID(ctx, userID)
+}

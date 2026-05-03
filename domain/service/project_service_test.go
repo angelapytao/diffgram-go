@@ -89,3 +89,19 @@ func TestProjectService_ListByOrgID_Empty(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, list)
 }
+
+func TestProjectService_ListByUserPrimaryID(t *testing.T) {
+	repo := new(mockProjectRepo)
+	svc := service.GetProjectService()
+	svc.Init(repo)
+
+	sid := "my-project"
+	uid := 5
+	repo.On("ListByUserPrimaryID", mock.Anything, uid).
+		Return([]*entity.Project{{ProjectStringID: &sid}}, nil)
+
+	list, err := svc.ListByUserPrimaryID(context.Background(), uid)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+	assert.Equal(t, sid, *list[0].ProjectStringID)
+}
