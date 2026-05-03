@@ -15,8 +15,12 @@ var pApp projectApp
 
 func GetProjectApp() *projectApp { return &pApp }
 
-func (a *projectApp) Create(ctx context.Context, req *dto.CreateProjectReq) (*dto.ProjectResp, error) {
-	proj := &entity.Project{Name: req.Name, ProjectStringID: req.ProjectStringID, OrgID: req.OrgID}
+func (a *projectApp) Create(ctx context.Context, req *dto.CreateProjectReq, userID int) (*dto.ProjectResp, error) {
+	proj := &entity.Project{
+		Name:            req.Name,
+		ProjectStringID: req.ProjectStringID,
+		UserPrimaryID:   &userID,
+	}
 	if err := domainservice.GetProjectService().Create(ctx, proj); err != nil {
 		return nil, err
 	}
@@ -47,6 +51,18 @@ func (a *projectApp) GetByStringID(ctx context.Context, sid string) (*dto.Projec
 
 func (a *projectApp) ListByOrgID(ctx context.Context, orgID int) ([]*dto.ProjectResp, error) {
 	projects, err := domainservice.GetProjectService().ListByOrgID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*dto.ProjectResp, len(projects))
+	for i, p := range projects {
+		result[i] = &dto.ProjectResp{ID: p.ID, Name: p.Name, ProjectStringID: p.ProjectStringID}
+	}
+	return result, nil
+}
+
+func (a *projectApp) ListByUserPrimaryID(ctx context.Context, userID int) ([]*dto.ProjectResp, error) {
+	projects, err := domainservice.GetProjectService().ListByUserPrimaryID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
