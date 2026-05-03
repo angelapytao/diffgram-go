@@ -35,7 +35,7 @@ func TestRunMigrations(t *testing.T) {
 
 	sqlDB, err := sql.Open("mysql", dsn)
 	require.NoError(t, err)
-	defer sqlDB.Close()
+	defer func() { _ = sqlDB.Close() }()
 
 	_, filename, _, _ := runtime.Caller(0)
 	migrationsDir := filepath.Join(filepath.Dir(filename), "..", "..", "migrations")
