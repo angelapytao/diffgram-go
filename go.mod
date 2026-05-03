@@ -9,6 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.42.0
+	gorm.io/datatypes v1.2.7
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.0
 )
@@ -93,5 +94,4 @@ require (
 	golang.org/x/text v0.36.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/datatypes v1.2.7 // indirect
 )
