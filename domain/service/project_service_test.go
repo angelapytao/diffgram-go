@@ -45,6 +45,11 @@ func (m *mockProjectRepo) Save(ctx context.Context, project *entity.Project) err
 	return args.Error(0)
 }
 
+func (m *mockProjectRepo) ListByUserPrimaryID(ctx context.Context, userID int) ([]*entity.Project, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).([]*entity.Project), args.Error(1)
+}
+
 func TestProjectService_Create(t *testing.T) {
 	repo := new(mockProjectRepo)
 	svc := &service.ProjectService{}

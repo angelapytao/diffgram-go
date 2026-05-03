@@ -119,3 +119,35 @@ func TestProjectRepository_CRUD(t *testing.T) {
 	require.NotNil(t, updated.Name)
 	assert.Equal(t, "Test Project", *updated.Name)
 }
+
+func TestGormProjectRepo_ListByUserPrimaryID(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test: requires Docker")
+	}
+	ctx := context.Background()
+	db := setupTestDB(t)
+
+	userRepo := infrarepo.NewUserRepository(db)
+	projectRepo := infrarepo.NewProjectRepository(db)
+
+	uid := 77
+	email := "listowner@example.com"
+	hash := "hashval"
+	user := &entity.User{Email: email, PasswordHash: &hash}
+	user.ID = uid
+	require.NoError(t, userRepo.Create(ctx, user))
+
+	sid1 := "proj-one"
+	sid2 := "proj-two"
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid1, UserPrimaryID: &uid}))
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid2, UserPrimaryID: &uid}))
+
+	// project belonging to someone else — must not appear
+	other := 99
+	sidOther := "other-proj"
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sidOther, UserPrimaryID: &other}))
+
+	list, err := projectRepo.ListByUserPrimaryID(ctx, uid)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+}

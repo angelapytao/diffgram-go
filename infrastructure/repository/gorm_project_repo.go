@@ -57,3 +57,11 @@ func (r *gormProjectRepo) Create(ctx context.Context, project *entity.Project) e
 func (r *gormProjectRepo) Save(ctx context.Context, project *entity.Project) error {
 	return r.db.WithContext(ctx).Save(project).Error
 }
+
+func (r *gormProjectRepo) ListByUserPrimaryID(ctx context.Context, userID int) ([]*entity.Project, error) {
+	var projects []*entity.Project
+	if err := r.db.WithContext(ctx).Where("user_primary_id = ?", userID).Find(&projects).Error; err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
