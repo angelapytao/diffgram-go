@@ -130,24 +130,27 @@ func TestGormProjectRepo_ListByUserPrimaryID(t *testing.T) {
 	userRepo := infrarepo.NewUserRepository(db)
 	projectRepo := infrarepo.NewProjectRepository(db)
 
-	uid := 77
-	email := "listowner@example.com"
+	// Create owner user — let DB assign ID
 	hash := "hashval"
-	user := &entity.User{Email: email, PasswordHash: &hash}
-	user.ID = uid
-	require.NoError(t, userRepo.Create(ctx, user))
+	owner := &entity.User{Email: "listowner@example.com", PasswordHash: &hash}
+	require.NoError(t, userRepo.Create(ctx, owner))
+	ownerID := owner.ID
+
+	// Create another user so the FK is satisfied for the "other" project
+	otherUser := &entity.User{Email: "other@example.com", PasswordHash: &hash}
+	require.NoError(t, userRepo.Create(ctx, otherUser))
+	otherID := otherUser.ID
 
 	sid1 := "proj-one"
 	sid2 := "proj-two"
-	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid1, UserPrimaryID: &uid}))
-	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid2, UserPrimaryID: &uid}))
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid1, UserPrimaryID: &ownerID}))
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sid2, UserPrimaryID: &ownerID}))
 
-	// project belonging to someone else — must not appear
-	other := 99
+	// project belonging to someone else — must not appear in owner's list
 	sidOther := "other-proj"
-	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sidOther, UserPrimaryID: &other}))
+	require.NoError(t, projectRepo.Create(ctx, &entity.Project{ProjectStringID: &sidOther, UserPrimaryID: &otherID}))
 
-	list, err := projectRepo.ListByUserPrimaryID(ctx, uid)
+	list, err := projectRepo.ListByUserPrimaryID(ctx, ownerID)
 	require.NoError(t, err)
 	assert.Len(t, list, 2)
 }
