@@ -85,7 +85,7 @@ func TestE2E_RegisterLoginCreateProjectList(t *testing.T) {
 	})
 	regResp, err := client.Post(base+"/api/v1/user/new", "application/json", bytes.NewReader(regBody))
 	require.NoError(t, err)
-	defer regResp.Body.Close()
+	defer func() { _ = regResp.Body.Close() }()
 	assert.Equal(t, http.StatusOK, regResp.StatusCode, "register must succeed")
 
 	// 2. Login
@@ -96,7 +96,7 @@ func TestE2E_RegisterLoginCreateProjectList(t *testing.T) {
 	})
 	loginResp, err := client.Post(base+"/api/user/login", "application/json", bytes.NewReader(loginBody))
 	require.NoError(t, err)
-	defer loginResp.Body.Close()
+	defer func() { _ = loginResp.Body.Close() }()
 	require.Equal(t, http.StatusOK, loginResp.StatusCode, "login must succeed")
 
 	var jwtCookie string
@@ -119,7 +119,7 @@ func TestE2E_RegisterLoginCreateProjectList(t *testing.T) {
 	projReq.Header.Set("Authorization", authHeader)
 	projCreateResp, err := client.Do(projReq)
 	require.NoError(t, err)
-	defer projCreateResp.Body.Close()
+	defer func() { _ = projCreateResp.Body.Close() }()
 	require.Equal(t, http.StatusOK, projCreateResp.StatusCode, "create project must succeed")
 
 	// 4. List projects
@@ -128,7 +128,7 @@ func TestE2E_RegisterLoginCreateProjectList(t *testing.T) {
 	listReq.Header.Set("Authorization", authHeader)
 	listResp, err := client.Do(listReq)
 	require.NoError(t, err)
-	defer listResp.Body.Close()
+	defer func() { _ = listResp.Body.Close() }()
 	require.Equal(t, http.StatusOK, listResp.StatusCode, "list projects must succeed")
 
 	var listResult map[string]interface{}
@@ -142,7 +142,7 @@ func TestE2E_RegisterLoginCreateProjectList(t *testing.T) {
 	viewReq.Header.Set("Authorization", authHeader)
 	viewResp, err := client.Do(viewReq)
 	require.NoError(t, err)
-	defer viewResp.Body.Close()
+	defer func() { _ = viewResp.Body.Close() }()
 	require.Equal(t, http.StatusOK, viewResp.StatusCode, "view project must succeed")
 
 	var viewResult map[string]interface{}

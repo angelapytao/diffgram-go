@@ -18,9 +18,9 @@ import (
 	"github.com/angelapytao/diffgram-go/config"
 	"github.com/angelapytao/diffgram-go/domain/entity"
 	domainservice "github.com/angelapytao/diffgram-go/domain/service"
+	infratoken "github.com/angelapytao/diffgram-go/infrastructure/token"
 	"github.com/angelapytao/diffgram-go/interfaces/http/facade"
 	"github.com/angelapytao/diffgram-go/interfaces/http/middleware"
-	infratoken "github.com/angelapytao/diffgram-go/infrastructure/token"
 )
 
 type mockProjectRepo struct{ mock.Mock }
