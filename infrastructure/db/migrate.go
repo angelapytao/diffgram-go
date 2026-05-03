@@ -1,0 +1,14 @@
+package db
+
+import (
+	"database/sql"
+
+	"github.com/pressly/goose/v3"
+)
+
+func RunMigrations(db *sql.DB, migrationsDir string) error {
+	if err := goose.SetDialect("mysql"); err != nil {
+		return err
+	}
+	return goose.Up(db, migrationsDir)
+}
