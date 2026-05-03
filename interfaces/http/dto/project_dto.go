@@ -1,8 +1,9 @@
 package dto
 
+// CreateProjectReq is the body for POST /api/project/new
 type CreateProjectReq struct {
-	Name            *string `json:"name"`
-	ProjectStringID *string `json:"project_string_id"`
+	Name            *string `json:"project_name"      binding:"required"`
+	ProjectStringID *string `json:"project_string_id" binding:"required"`
 	OrgID           *int    `json:"org_id"`
 }
 
@@ -14,5 +15,5 @@ type ProjectResp struct {
 
 type UpdateProjectReq struct {
 	ID   int     `json:"id"`
-	Name *string `json:"name"`
+	Name *string `json:"project_name"`
 }
