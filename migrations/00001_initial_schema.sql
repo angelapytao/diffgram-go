@@ -63,10 +63,10 @@ CREATE TABLE IF NOT EXISTS `action` (
   `email_body` VARCHAR(255),
   `overlay_kind` VARCHAR(255),
   `overlay_text` VARCHAR(255),
-  `overlay_image_id` INT,
+  `overlay_image_id` BIGINT,
   `overlay_position` VARCHAR(255),
   `overlay_size` VARCHAR(255),
-  `overlay_label_file_id` INT,
+  `overlay_label_file_id` BIGINT,
   `url_to_post` VARCHAR(255),
   `secret_webhook` VARCHAR(255),
   `icon` VARCHAR(255),
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `action_run` (
   `email_was_sent_to` VARCHAR(255),
   `email_subject` VARCHAR(255),
   `email_body` VARCHAR(255),
-  `overlay_rendered_image_id` INT,
+  `overlay_rendered_image_id` BIGINT,
   `output` JSON,
   `status` VARCHAR(255),
   PRIMARY KEY (`id`),
@@ -167,8 +167,8 @@ CREATE TABLE IF NOT EXISTS `workflow_trigger_event_queue` (
   `has_aggregation_event_running` TINYINT(1),
   `aggregation_window_start_time` DATETIME(6),
   `project_id` INT,
-  `task_id` INT,
-  `job_id` INT,
+  `task_id` BIGINT,
+  `job_id` BIGINT,
   `workflow_id` INT,
   `org_id` INT,
   `time_created` DATETIME(6),
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `workflow_trigger_event_queue` (
   CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `task` (`id`),
   CONSTRAINT `org_id_fkey` FOREIGN KEY (`org_id`) REFERENCES `org` (`id`),
   CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
+  CONSTRAINT `action_flow_event_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `action_template` (
@@ -236,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
 
 CREATE TABLE IF NOT EXISTS `attribute_template` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `group_id` INT,
+  `group_id` BIGINT,
   `archived` TINYINT(1),
   `display_order` INT,
   `name` VARCHAR(255),
@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS `attribute_template` (
   `member_updated_id` INT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
-  `parent_id` INT,
+  `parent_id` BIGINT,
   PRIMARY KEY (`id`),
   CONSTRAINT `attribute_template_group_id_fkey` FOREIGN KEY (`group_id`) REFERENCES `attribute_template_group` (`id`),
   CONSTRAINT `attribute_template_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
@@ -266,15 +266,15 @@ CREATE TABLE IF NOT EXISTS `attribute_template_group` (
   `show_prompt` TINYINT(1),
   `is_root` TINYINT(1),
   `is_new` TINYINT(1),
-  `parent_id` INT,
-  `root_id` INT,
+  `parent_id` BIGINT,
+  `root_id` BIGINT,
   `kind` VARCHAR(255),
   `project_id` INT,
   `member_created_id` INT,
   `member_updated_id` INT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
-  `default_external_map_id` INT,
+  `default_external_map_id` BIGINT,
   `default_value` VARCHAR(255),
   `default_id` INT,
   `min_value` INT,
@@ -293,8 +293,8 @@ CREATE TABLE IF NOT EXISTS `attribute_template_group` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `attribute_template_group_to_file` (
-  `attribute_template_group_id` INT NOT NULL,
-  `file_id` INT NOT NULL,
+  `attribute_template_group_id` BIGINT NOT NULL,
+  `file_id` BIGINT NOT NULL,
   PRIMARY KEY (`attribute_template_group_id`, `file_id`),
   CONSTRAINT `attribute_template_group_to_fi_attribute_template_group_id_fkey` FOREIGN KEY (`attribute_template_group_id`) REFERENCES `attribute_template_group` (`id`),
   CONSTRAINT `attribute_template_group_to_file_file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`)
@@ -365,7 +365,7 @@ CREATE TABLE IF NOT EXISTS `credential` (
   `user_id` INT,
   `status` VARCHAR(255),
   `external_id` VARCHAR(255),
-  `image_id` INT,
+  `image_id` BIGINT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
   PRIMARY KEY (`id`),
@@ -382,7 +382,7 @@ CREATE TABLE IF NOT EXISTS `credential_type` (
   `archived` TINYINT(1),
   `history_cache` VARCHAR(255),
   `public` TINYINT(1),
-  `image_id` INT,
+  `image_id` BIGINT,
   `member_created_id` INT,
   `member_updated_id` INT,
   `time_created` DATETIME(6),
@@ -439,14 +439,13 @@ CREATE TABLE IF NOT EXISTS `discussion` (
   `marker_type` VARCHAR(255),
   `marker_data` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `discussion_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `discussion_comment` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `user_id` INT,
-  `discussion_id` INT,
+  `discussion_id` BIGINT,
   `project_id` INT,
   `content` VARCHAR(255),
   `member_created_id` INT,
@@ -454,10 +453,7 @@ CREATE TABLE IF NOT EXISTS `discussion_comment` (
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
   PRIMARY KEY (`id`),
-  CONSTRAINT `discussion_id_fkey` FOREIGN KEY (`discussion_id`) REFERENCES `discussion` (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `discussion_comment_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -465,30 +461,23 @@ CREATE TABLE IF NOT EXISTS `discussion_member` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `user_id` INT,
   `member_id` INT,
-  `discussion_id` INT,
+  `discussion_id` BIGINT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `discussion_id_fkey` FOREIGN KEY (`discussion_id`) REFERENCES `discussion` (`id`),
-  CONSTRAINT `member_id_fkey` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
+  CONSTRAINT `discussion_member_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `discussion_relation` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `created_time` DATETIME(6),
-  `discussion_id` INT,
-  `instance_id` INT,
-  `file_id` INT,
-  `job_id` INT,
+  `discussion_id` BIGINT,
+  `instance_id` BIGINT,
+  `file_id` BIGINT,
+  `job_id` BIGINT,
   `type` VARCHAR(255),
   `project_id` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `discussion_id_fkey` FOREIGN KEY (`discussion_id`) REFERENCES `discussion` (`id`),
-  CONSTRAINT `file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
-  CONSTRAINT `instance_id_fkey` FOREIGN KEY (`instance_id`) REFERENCES `instance` (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
+  CONSTRAINT `discussion_relation_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `event` (
@@ -502,18 +491,18 @@ CREATE TABLE IF NOT EXISTS `event` (
   `project_id` INT,
   `input_id` INT,
   `member_id` INT,
-  `file_id` INT,
+  `file_id` BIGINT,
   `report_template_id` INT,
   `report_data` VARCHAR(255),
   `report_template_data` VARCHAR(255),
   `time_created` DATETIME(6),
-  `task_id` INT,
+  `task_id` BIGINT,
   `job_id` INT,
   `object_type` VARCHAR(255),
   `page_name` VARCHAR(255),
   `install_fingerprint` VARCHAR(255),
   `diffgram_version` VARCHAR(255),
-  `action_id` INT,
+  `action_id` BIGINT,
   `workflow_id` INT,
   `directory_id` INT,
   `extra_metadata` JSON,
@@ -525,9 +514,9 @@ CREATE TABLE IF NOT EXISTS `event` (
   CONSTRAINT `event_member_id_fkey` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
   CONSTRAINT `event_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `event_workflow_id_fkey` FOREIGN KEY (`workflow_id`) REFERENCES `workflow` (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
+  CONSTRAINT `event_job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
   CONSTRAINT `report_template_id_fkey` FOREIGN KEY (`report_template_id`) REFERENCES `report_template` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
+  CONSTRAINT `event_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `event_hub` (
@@ -588,7 +577,7 @@ CREATE TABLE IF NOT EXISTS `export` (
   `project_id` INT,
   `user_id` INT,
   `job_id` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `yaml_blob_name` VARCHAR(255),
   `json_blob_name` VARCHAR(255),
   `tf_records_blob_name` VARCHAR(255),
@@ -609,9 +598,9 @@ CREATE TABLE IF NOT EXISTS `external_map` (
   `url` VARCHAR(255),
   `project_id` INT,
   `job_id` INT,
-  `file_id` INT,
-  `task_id` INT,
-  `attribute_template_group_id` INT,
+  `file_id` BIGINT,
+  `task_id` BIGINT,
+  `attribute_template_group_id` BIGINT,
   `user_id` INT,
   `connection_id` INT,
   `dataset_id` INT,
@@ -619,19 +608,19 @@ CREATE TABLE IF NOT EXISTS `external_map` (
   `member_updated_id` INT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
-  `instance_id` INT,
-  `attribute_template_id` INT,
+  `instance_id` BIGINT,
+  `attribute_template_id` BIGINT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `attribute_template_group_id_fkey` FOREIGN KEY (`attribute_template_group_id`) REFERENCES `attribute_template_group` (`id`),
+  CONSTRAINT `external_map_attribute_template_group_id_fkey` FOREIGN KEY (`attribute_template_group_id`) REFERENCES `attribute_template_group` (`id`),
   CONSTRAINT `external_map_attribute_template_id_fkey` FOREIGN KEY (`attribute_template_id`) REFERENCES `attribute_template` (`id`),
-  CONSTRAINT `file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
-  CONSTRAINT `instance_id_fkey` FOREIGN KEY (`instance_id`) REFERENCES `instance` (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`),
-  CONSTRAINT `user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
+  CONSTRAINT `external_map_file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
+  CONSTRAINT `external_map_instance_id_fkey` FOREIGN KEY (`instance_id`) REFERENCES `instance` (`id`),
+  CONSTRAINT `external_map_job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
+  CONSTRAINT `external_map_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `external_map_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `external_map_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `external_map_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`),
+  CONSTRAINT `external_map_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `file` (
@@ -655,7 +644,7 @@ CREATE TABLE IF NOT EXISTS `file` (
   `boxes_count` INT,
   `boxes_machine_made_count` INT,
   `polygon_count` INT,
-  `image_id` INT,
+  `image_id` BIGINT,
   `original_filename` VARCHAR(255),
   `video_id` INT,
   `video_parent_file_id` BIGINT,
@@ -671,22 +660,22 @@ CREATE TABLE IF NOT EXISTS `file` (
   `colour` VARCHAR(255),
   `mask_joint_blob_name` VARCHAR(255),
   `cache_dict` VARCHAR(255),
-  `default_external_map_id` INT,
-  `task_id` INT,
-  `text_file_id` INT,
+  `default_external_map_id` BIGINT,
+  `task_id` BIGINT,
+  `text_file_id` BIGINT,
   `has_instances` TINYINT(1),
   `count_instances` INT,
   `file_metadata` JSON,
   `point_cloud_id` INT,
   `text_tokenizer` VARCHAR(255),
-  `audio_file_id` INT,
+  `audio_file_id` BIGINT,
   `connection_id` INT,
   `bucket_name` VARCHAR(255),
-  `ui_schema_id` INT,
+  `ui_schema_id` BIGINT,
   `ordinal` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `audio_file_id_fkey` FOREIGN KEY (`audio_file_id`) REFERENCES `audio_file` (`id`),
-  CONSTRAINT `default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
+  CONSTRAINT `file_audio_file_id_fkey` FOREIGN KEY (`audio_file_id`) REFERENCES `audio_file` (`id`),
+  CONSTRAINT `file_default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
   CONSTRAINT `file_child_primary_id_fkey` FOREIGN KEY (`child_primary_id`) REFERENCES `file` (`id`),
   CONSTRAINT `file_connection_id_fkey` FOREIGN KEY (`connection_id`) REFERENCES `connection_base` (`id`),
   CONSTRAINT `file_image_id_fkey` FOREIGN KEY (`image_id`) REFERENCES `image` (`id`),
@@ -721,16 +710,16 @@ CREATE TABLE IF NOT EXISTS `file_stats` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `created_time` DATETIME(6),
   `count_instances` INT,
-  `file_id` INT,
-  `label_file_id` INT,
+  `file_id` BIGINT,
+  `label_file_id` BIGINT,
   `annotators_member_list` JSON,
   `attribute_value_text` VARCHAR(255),
   `attribute_value_number` INT,
   `attribute_value_selected` TINYINT(1),
   `attribute_value_selected_date` DATETIME(6),
   `attribute_value_selected_time` TIME,
-  `attribute_template_id` INT,
-  `attribute_template_group_id` INT,
+  `attribute_template_id` BIGINT,
+  `attribute_template_group_id` BIGINT,
   `member_created_id` INT,
   `member_updated_id` INT,
   PRIMARY KEY (`id`),
@@ -750,7 +739,6 @@ CREATE INDEX `index__fa_attributes_selected` ON `file_stats` (`attribute_templat
 CREATE INDEX `index__fa_attributes_text` ON `file_stats` (`attribute_template_id`, `attribute_template_group_id`, `attribute_value_text`);
 CREATE INDEX `index__fa_label_file_id` ON `file_stats` (`label_file_id`);
 CREATE INDEX `index__fa_label_file_id_count_instances` ON `file_stats` (`label_file_id`, `count_instances`);
-CREATE INDEX `index__fa_member_list` ON `file_stats` (`annotators_member_list`);
 
 CREATE TABLE IF NOT EXISTS `geo_asset` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -761,7 +749,7 @@ CREATE TABLE IF NOT EXISTS `geo_asset` (
   `type` VARCHAR(255),
   `url_signed_blob_path` VARCHAR(255),
   `url_signed_expiry` VARCHAR(255),
-  `file_id` INT,
+  `file_id` BIGINT,
   `project_id` INT,
   `url_signed_expiry_force_refresh` VARCHAR(255),
   `service_name` VARCHAR(255),
@@ -853,8 +841,8 @@ CREATE TABLE IF NOT EXISTS `input` (
   `retry_log` VARCHAR(255),
   `retry_count` INT,
   `parent_input_id` INT,
-  `parent_file_id` INT,
-  `file_id` INT,
+  `parent_file_id` BIGINT,
+  `file_id` BIGINT,
   `job_id` INT,
   `directory_id` INT,
   `invalid_directory_permission` TINYINT(1),
@@ -868,17 +856,17 @@ CREATE TABLE IF NOT EXISTS `input` (
   `instance_list` VARCHAR(255),
   `frame_packet_map` VARCHAR(255),
   `video_parent_length` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `task_action` VARCHAR(255),
-  `external_map_id` INT,
+  `external_map_id` BIGINT,
   `external_map_action` VARCHAR(255),
-  `newly_copied_file_id` INT,
+  `newly_copied_file_id` BIGINT,
   `source_directory_id` INT,
   `add_link` TINYINT(1),
   `remove_link` TINYINT(1),
   `copy_instance_list` TINYINT(1),
   `sequence_map` VARCHAR(255),
-  `batch_id` INT,
+  `batch_id` BIGINT,
   `allow_duplicates` TINYINT(1),
   `upload_aws_id` VARCHAR(255),
   `upload_aws_parts_list` VARCHAR(255),
@@ -893,7 +881,7 @@ CREATE TABLE IF NOT EXISTS `input` (
   `ordinal` INT,
   `text_data` VARCHAR(255),
   `workflow_trigger_id` INT,
-  `action_trigger_id` INT,
+  `action_trigger_id` BIGINT,
   PRIMARY KEY (`id`),
   CONSTRAINT `batch_id_fkey` FOREIGN KEY (`batch_id`) REFERENCES `input_batch` (`id`),
   CONSTRAINT `external_map_id_fkey` FOREIGN KEY (`external_map_id`) REFERENCES `external_map` (`id`),
@@ -909,7 +897,7 @@ CREATE TABLE IF NOT EXISTS `input` (
   CONSTRAINT `input_workflow_trigger_id_fkey` FOREIGN KEY (`workflow_trigger_id`) REFERENCES `workflow` (`id`),
   CONSTRAINT `newly_copied_file_id_fkey` FOREIGN KEY (`newly_copied_file_id`) REFERENCES `file` (`id`),
   CONSTRAINT `source_directory_id_fkey` FOREIGN KEY (`source_directory_id`) REFERENCES `working_dir` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
+  CONSTRAINT `input_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX `index__input_archived` ON `input` (`archived`);
@@ -940,8 +928,8 @@ CREATE TABLE IF NOT EXISTS `input_batch` (
   `download_status_pre_labeled_data` VARCHAR(255),
   `download_log_pre_labeled_data` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `directory_id_fkey` FOREIGN KEY (`directory_id`) REFERENCES `working_dir` (`id`),
-  CONSTRAINT `source_directory_id_fkey` FOREIGN KEY (`source_directory_id`) REFERENCES `working_dir` (`id`)
+  CONSTRAINT `input_batch_directory_id_fkey` FOREIGN KEY (`directory_id`) REFERENCES `working_dir` (`id`),
+  CONSTRAINT `input_batch_source_directory_id_fkey` FOREIGN KEY (`source_directory_id`) REFERENCES `working_dir` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `instance` (
@@ -960,8 +948,8 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `interpolated` TINYINT(1),
   `verified` TINYINT(1),
   `soft_delete` TINYINT(1),
-  `label_file_id` INT,
-  `file_id` INT,
+  `label_file_id` BIGINT,
+  `file_id` BIGINT,
   `points` VARCHAR(255),
   `mask_url` VARCHAR(255),
   `mask_blob_dir` VARCHAR(255),
@@ -979,7 +967,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `rating_comment` VARCHAR(255),
   `attribute_groups` VARCHAR(255),
   `member_created_id` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `start_sentence` INT,
   `end_sentence` INT,
   `start_token` INT,
@@ -987,7 +975,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `start_char` INT,
   `end_char` INT,
   `sentence` INT,
-  `parent_file_id` INT,
+  `parent_file_id` BIGINT,
   `creation_ref_id` VARCHAR(255),
   `previous_id` BIGINT,
   `next_id` BIGINT,
@@ -1010,8 +998,8 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `deletion_type` VARCHAR(255),
   `action_type` VARCHAR(255),
   `pause_object` TINYINT(1),
-  `model_id` INT,
-  `model_run_id` INT,
+  `model_id` BIGINT,
+  `model_run_id` BIGINT,
   `rotation_euler_angles` VARCHAR(255),
   `position_3d` VARCHAR(255),
   `center_3d` VARCHAR(255),
@@ -1019,8 +1007,8 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `min_point_3d` VARCHAR(255),
   `dimensions_3d` VARCHAR(255),
   `text_tokenizer` VARCHAR(255),
-  `from_instance_id` INT,
-  `to_instance_id` INT,
+  `from_instance_id` BIGINT,
+  `to_instance_id` BIGINT,
   `lonlat` JSON,
   `coords` JSON,
   `radius` DOUBLE,
@@ -1070,15 +1058,13 @@ CREATE TABLE IF NOT EXISTS `instance_template` (
   `deleted_time` DATETIME(6),
   `mode` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `instance_template_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `instance_template_relation` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `instance_id` INT,
-  `instance_template_id` INT,
+  `instance_id` BIGINT,
+  `instance_template_id` BIGINT,
   `created_time` DATETIME(6),
   `last_updated_time` DATETIME(6),
   `deleted_time` DATETIME(6),
@@ -1139,32 +1125,32 @@ CREATE TABLE IF NOT EXISTS `job` (
   `output_dir_action` VARCHAR(255),
   `pending_initial_dir_sync` TINYINT(1),
   `interface_connection_id` INT,
-  `default_external_map_id` INT,
+  `default_external_map_id` BIGINT,
   `cache_dict` VARCHAR(255),
   `send_tasks_to_external_provider_on_launch` TINYINT(1),
   `pro_network` TINYINT(1),
   `is_pinned` TINYINT(1),
   `default_userscript_id` INT,
-  `ui_schema_id` INT,
+  `ui_schema_id` BIGINT,
   `allow_reviews` TINYINT(1),
   `review_chance` DOUBLE,
   `exam_id` INT,
   `label_schema_id` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
-  CONSTRAINT `interface_connection_id_fkey` FOREIGN KEY (`interface_connection_id`) REFERENCES `connection_base` (`id`),
+  CONSTRAINT `job_default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
+  CONSTRAINT `job_interface_connection_id_fkey` FOREIGN KEY (`interface_connection_id`) REFERENCES `connection_base` (`id`),
   CONSTRAINT `job_completion_directory_id_fkey` FOREIGN KEY (`completion_directory_id`) REFERENCES `working_dir` (`id`),
   CONSTRAINT `job_directory_id_fkey` FOREIGN KEY (`directory_id`) REFERENCES `working_dir` (`id`),
   CONSTRAINT `job_exam_id_fkey` FOREIGN KEY (`exam_id`) REFERENCES `exam` (`id`),
   CONSTRAINT `job_guide_default_id_fkey` FOREIGN KEY (`guide_default_id`) REFERENCES `guide` (`id`),
   CONSTRAINT `job_guide_review_id_fkey` FOREIGN KEY (`guide_review_id`) REFERENCES `guide` (`id`),
   CONSTRAINT `job_label_schema_id_fkey` FOREIGN KEY (`label_schema_id`) REFERENCES `label_schema` (`id`),
-  CONSTRAINT `job_member_created_id_fkey` FOREIGN KEY (`guide_review_id`) REFERENCES `guide` (`id`),
+  CONSTRAINT `job_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
   CONSTRAINT `job_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
   CONSTRAINT `job_parent_id_fkey` FOREIGN KEY (`parent_id`) REFERENCES `job` (`id`),
   CONSTRAINT `job_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `job_root_id_fkey` FOREIGN KEY (`root_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `ui_schema_id_fk` FOREIGN KEY (`ui_schema_id`) REFERENCES `ui_schema` (`id`)
+  CONSTRAINT `job_ui_schema_id_fkey` FOREIGN KEY (`ui_schema_id`) REFERENCES `ui_schema` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX `index__job_project_id` ON `job` (`project_id`, `status`);
@@ -1191,10 +1177,10 @@ CREATE TABLE IF NOT EXISTS `job_launch` (
 
 CREATE TABLE IF NOT EXISTS `job_launch_queue` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `job_launch_id` INT,
+  `job_launch_id` BIGINT,
   `priority` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `job_launch_id_fkey` FOREIGN KEY (`job_launch_id`) REFERENCES `job_launch` (`id`)
+  CONSTRAINT `job_launch_queue_job_launch_id_fkey` FOREIGN KEY (`job_launch_id`) REFERENCES `job_launch` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `job_tag` (
@@ -1211,8 +1197,8 @@ CREATE TABLE IF NOT EXISTS `job_working_dir` (
   `sync_type` VARCHAR(255),
   `working_dir_id` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `working_dir_id_fkey` FOREIGN KEY (`working_dir_id`) REFERENCES `working_dir` (`id`)
+  CONSTRAINT `job_working_dir_job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
+  CONSTRAINT `job_working_dir_working_dir_id_fkey` FOREIGN KEY (`working_dir_id`) REFERENCES `working_dir` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `label` (
@@ -1244,9 +1230,9 @@ CREATE INDEX `index_label_schema_project_id` ON `label_schema` (`project_id`);
 CREATE TABLE IF NOT EXISTS `label_schema_link` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `schema_id` INT,
-  `label_file_id` INT,
-  `instance_template_id` INT,
-  `attribute_template_group_id` INT,
+  `label_file_id` BIGINT,
+  `instance_template_id` BIGINT,
+  `attribute_template_group_id` BIGINT,
   `member_created_id` INT,
   `member_updated_id` INT,
   `time_created` DATETIME(6),
@@ -1283,9 +1269,9 @@ CREATE TABLE IF NOT EXISTS `model` (
   `member_updated_id` INT,
   `project_id` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `model_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `model_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `model_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `model_run` (
@@ -1297,12 +1283,12 @@ CREATE TABLE IF NOT EXISTS `model_run` (
   `member_created_id` INT,
   `member_updated_id` INT,
   `project_id` INT,
-  `model_id` INT,
+  `model_id` BIGINT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `model_id_fkey` FOREIGN KEY (`model_id`) REFERENCES `model` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `model_run_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `model_run_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `model_run_model_id_fkey` FOREIGN KEY (`model_id`) REFERENCES `model` (`id`),
+  CONSTRAINT `model_run_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `notification` (
@@ -1314,13 +1300,13 @@ CREATE TABLE IF NOT EXISTS `notification` (
   `description` VARCHAR(255),
   `member_created_id` INT,
   `member_updated_id` INT,
-  `notification_relation_id` INT,
+  `notification_relation_id` BIGINT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `notification_relation_id_fkey` FOREIGN KEY (`notification_relation_id`) REFERENCES `notification_relation` (`id`)
+  CONSTRAINT `notification_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `notification_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `notification_notification_relation_id_fkey` FOREIGN KEY (`notification_relation_id`) REFERENCES `notification_relation` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `notification_relation` (
@@ -1328,32 +1314,32 @@ CREATE TABLE IF NOT EXISTS `notification_relation` (
   `project_id` INT,
   `input_id` INT,
   `job_id` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `member_id` INT,
-  `file_id` INT,
+  `file_id` BIGINT,
   `working_dir_id` INT,
-  `notification_id` INT,
+  `notification_id` BIGINT,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
   PRIMARY KEY (`id`),
-  CONSTRAINT `file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
-  CONSTRAINT `input_id_fkey` FOREIGN KEY (`input_id`) REFERENCES `input` (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `member_id_fkey` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `notification_id_fkey` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`),
-  CONSTRAINT `working_dir_id_fkey` FOREIGN KEY (`working_dir_id`) REFERENCES `working_dir` (`id`)
+  CONSTRAINT `notification_relation_file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
+  CONSTRAINT `notification_relation_input_id_fkey` FOREIGN KEY (`input_id`) REFERENCES `input` (`id`),
+  CONSTRAINT `notification_relation_job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
+  CONSTRAINT `notification_relation_member_id_fkey` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `notification_relation_notification_id_fkey` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`),
+  CONSTRAINT `notification_relation_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `notification_relation_task_id_fkey` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`),
+  CONSTRAINT `notification_relation_working_dir_id_fkey` FOREIGN KEY (`working_dir_id`) REFERENCES `working_dir` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `notification_user` (
-  `notification_id` INT NOT NULL,
+  `notification_id` BIGINT NOT NULL,
   `user_id` INT NOT NULL,
   `is_read` TINYINT(1),
   `time_created` DATETIME(6),
   PRIMARY KEY (`notification_id`, `user_id`),
-  CONSTRAINT `notification_id_fkey` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`),
-  CONSTRAINT `user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
+  CONSTRAINT `notification_user_notification_id_fkey` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`),
+  CONSTRAINT `notification_user_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `org` (
@@ -1488,12 +1474,12 @@ CREATE TABLE IF NOT EXISTS `project` (
   `time_updated` DATETIME(6),
   `label_dict` VARCHAR(255),
   `cache_dict` VARCHAR(255),
-  `default_external_map_id` INT,
+  `default_external_map_id` BIGINT,
   `org_id` INT,
   `account_id` INT,
   `plan_id` INT,
   PRIMARY KEY (`id`),
-  CONSTRAINT `default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
+  CONSTRAINT `project_default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
   CONSTRAINT `project_account_id_fkey` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`),
   CONSTRAINT `project_default_report_dashboard_id_fkey` FOREIGN KEY (`default_report_dashboard_id`) REFERENCES `report_dashboard` (`id`),
   CONSTRAINT `project_deletion_id_fkey` FOREIGN KEY (`deletion_id`) REFERENCES `deletion` (`id`),
@@ -1533,7 +1519,7 @@ CREATE TABLE IF NOT EXISTS `project_migration` (
   `status` VARCHAR(255),
   `percent_complete` DOUBLE,
   `description` VARCHAR(255),
-  `external_mapping_project_id` INT,
+  `external_mapping_project_id` BIGINT,
   `connection_id` INT,
   `error_log` JSON,
   `retry_count` INT,
@@ -1623,7 +1609,7 @@ CREATE TABLE IF NOT EXISTS `report_template` (
   `is_visible_on_report_dashboard` TINYINT(1),
   `view_type` VARCHAR(255),
   `view_sub_type` VARCHAR(255),
-  `task_id` INT,
+  `task_id` BIGINT,
   `member_list` JSON,
   `group_by_labels` TINYINT(1),
   `task_event_type` VARCHAR(255),
@@ -1681,11 +1667,11 @@ CREATE INDEX `ix_scheduler_jobs_next_run_time` ON `scheduler_jobs` (`next_run_ti
 
 CREATE TABLE IF NOT EXISTS `sequence` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `label_file_id` INT,
+  `label_file_id` BIGINT,
   `has_changes` TINYINT(1),
   `single_frame` TINYINT(1),
   `keyframe_list` VARCHAR(255),
-  `video_file_id` INT,
+  `video_file_id` BIGINT,
   `number` INT,
   `instance_preview_cache` VARCHAR(255),
   `cache_expiry` INT,
@@ -1713,7 +1699,7 @@ CREATE TABLE IF NOT EXISTS `signup_code` (
 
 CREATE TABLE IF NOT EXISTS `sync_actions_queue` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `sync_event_id` INT,
+  `sync_event_id` BIGINT,
   PRIMARY KEY (`id`),
   CONSTRAINT `sync_event_id_fkey` FOREIGN KEY (`sync_event_id`) REFERENCES `sync_event` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1724,15 +1710,15 @@ CREATE TABLE IF NOT EXISTS `sync_event` (
   `dataset_destination_id` INT,
   `created_date` DATETIME(6),
   `description` VARCHAR(255),
-  `file_id` INT,
+  `file_id` BIGINT,
   `job_id` INT,
   `input_id` INT,
   `project_id` INT,
-  `created_task_id` INT,
-  `completed_task_id` INT,
-  `new_file_copy_id` INT,
-  `dataset_file_link_copy_id` INT,
-  `dataset_file_link_move_id` INT,
+  `created_task_id` BIGINT,
+  `completed_task_id` BIGINT,
+  `new_file_copy_id` BIGINT,
+  `dataset_file_link_copy_id` BIGINT,
+  `dataset_file_link_move_id` BIGINT,
   `transfer_action` VARCHAR(255),
   `event_effect_type` VARCHAR(255),
   `event_trigger_type` VARCHAR(255),
@@ -1744,22 +1730,22 @@ CREATE TABLE IF NOT EXISTS `sync_event` (
   `member_updated_id` INT,
   `execution_log` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `completed_task_id_fkey` FOREIGN KEY (`completed_task_id`) REFERENCES `task` (`id`),
-  CONSTRAINT `created_task_id_fkey` FOREIGN KEY (`created_task_id`) REFERENCES `task` (`id`),
-  CONSTRAINT `dataset_destination_id_fkey` FOREIGN KEY (`dataset_destination_id`) REFERENCES `working_dir` (`id`),
-  CONSTRAINT `dataset_source_id_fkey` FOREIGN KEY (`dataset_source_id`) REFERENCES `working_dir` (`id`),
-  CONSTRAINT `file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
-  CONSTRAINT `input_id_fkey` FOREIGN KEY (`input_id`) REFERENCES `input` (`id`),
-  CONSTRAINT `job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `new_file_copy_id_fkey` FOREIGN KEY (`new_file_copy_id`) REFERENCES `file` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `sync_event_completed_task_id_fkey` FOREIGN KEY (`completed_task_id`) REFERENCES `task` (`id`),
+  CONSTRAINT `sync_event_created_task_id_fkey` FOREIGN KEY (`created_task_id`) REFERENCES `task` (`id`),
+  CONSTRAINT `sync_event_dataset_destination_id_fkey` FOREIGN KEY (`dataset_destination_id`) REFERENCES `working_dir` (`id`),
+  CONSTRAINT `sync_event_dataset_source_id_fkey` FOREIGN KEY (`dataset_source_id`) REFERENCES `working_dir` (`id`),
+  CONSTRAINT `sync_event_file_id_fkey` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`),
+  CONSTRAINT `sync_event_input_id_fkey` FOREIGN KEY (`input_id`) REFERENCES `input` (`id`),
+  CONSTRAINT `sync_event_job_id_fkey` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`),
+  CONSTRAINT `sync_event_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `sync_event_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `sync_event_new_file_copy_id_fkey` FOREIGN KEY (`new_file_copy_id`) REFERENCES `file` (`id`),
+  CONSTRAINT `sync_event_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `system_configs` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `logo_id` INT,
+  `logo_id` BIGINT,
   PRIMARY KEY (`id`),
   CONSTRAINT `image_id_fkey` FOREIGN KEY (`logo_id`) REFERENCES `image` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1799,8 +1785,8 @@ CREATE TABLE IF NOT EXISTS `task` (
   `is_live` TINYINT(1),
   `is_root` TINYINT(1),
   `root_id` INT,
-  `parent_id` INT,
-  `child_primary_id` INT,
+  `parent_id` BIGINT,
+  `child_primary_id` BIGINT,
   `job_id` INT,
   `kind` VARCHAR(255),
   `task_type` VARCHAR(255),
@@ -1826,10 +1812,10 @@ CREATE TABLE IF NOT EXISTS `task` (
   `review_star_rating_average` DOUBLE,
   `gold_standard_missing` INT,
   `incoming_directory_id` INT,
-  `default_external_map_id` INT,
+  `default_external_map_id` BIGINT,
   `text_tokenizer` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
+  CONSTRAINT `task_default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
   CONSTRAINT `task_assignee_user_id_fkey` FOREIGN KEY (`assignee_user_id`) REFERENCES `userbase` (`id`),
   CONSTRAINT `task_child_primary_id_fkey` FOREIGN KEY (`child_primary_id`) REFERENCES `task` (`id`),
   CONSTRAINT `task_completion_directory_id_fkey` FOREIGN KEY (`completion_directory_id`) REFERENCES `working_dir` (`id`),
@@ -1853,9 +1839,9 @@ CREATE TABLE IF NOT EXISTS `task_event` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `job_id` INT,
   `project_id` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `event_type` VARCHAR(255),
-  `comment_id` INT,
+  `comment_id` BIGINT,
   `member_created_id` INT,
   `member_updated_id` INT,
   `time_created` DATETIME(6),
@@ -1889,13 +1875,13 @@ CREATE TABLE IF NOT EXISTS `task_report` (
 
 CREATE TABLE IF NOT EXISTS `task_time_tracking` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `job_id` INT,
   `project_id` INT,
   `status` VARCHAR(255),
   `user_id` INT,
-  `file_id` INT,
-  `parent_file_id` INT,
+  `file_id` BIGINT,
+  `parent_file_id` BIGINT,
   `time_spent` DOUBLE NOT NULL,
   `time_created` DATETIME(6),
   `time_updated` DATETIME(6),
@@ -1919,7 +1905,7 @@ CREATE INDEX `index__task_time_tracking_user_id` ON `task_time_tracking` (`user_
 
 CREATE TABLE IF NOT EXISTS `task_user` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `user_id` INT,
   `relation` VARCHAR(255),
   `time_created` DATETIME(6),
@@ -1967,7 +1953,7 @@ CREATE TABLE IF NOT EXISTS `transaction` (
   `balance_new` INT,
   `cost_per_instance` INT,
   `count_instances_changed` INT,
-  `task_id` INT,
+  `task_id` BIGINT,
   `job_id` INT,
   `project_id` INT,
   `time_created` DATETIME(6),
@@ -2035,9 +2021,9 @@ CREATE TABLE IF NOT EXISTS `ui_schema` (
   `time_tracking` JSON,
   `custom_buttons` JSON,
   PRIMARY KEY (`id`),
-  CONSTRAINT `member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+  CONSTRAINT `ui_schema_member_created_id_fkey` FOREIGN KEY (`member_created_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `ui_schema_member_updated_id_fkey` FOREIGN KEY (`member_updated_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `ui_schema_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `user_follow` (
@@ -2099,7 +2085,7 @@ CREATE TABLE IF NOT EXISTS `userbase` (
   `otp_backup` VARCHAR(255),
   `otp_current_session` VARCHAR(255),
   `otp_current_session_expiry` INT,
-  `profile_image_id` INT,
+  `profile_image_id` BIGINT,
   `profile_image_url` VARCHAR(255),
   `profile_image_blob` VARCHAR(255),
   `profile_image_expiry` INT,
@@ -2114,7 +2100,7 @@ CREATE TABLE IF NOT EXISTS `userbase` (
   `permissions_projects` VARCHAR(255),
   `permissions_general` VARCHAR(255),
   `is_super_admin` TINYINT(1),
-  `last_task_id` INT,
+  `last_task_id` BIGINT,
   `available_for_annotation_assignment` TINYINT(1),
   `is_annotator` TINYINT(1),
   `signup_code_id` INT,
@@ -2188,7 +2174,7 @@ CREATE TABLE IF NOT EXISTS `video` (
   `file_signed_url` VARCHAR(255),
   `file_blob_path` VARCHAR(255),
   `preview_image_url_thumb` VARCHAR(255),
-  `preview_image_id` INT,
+  `preview_image_id` BIGINT,
   `width` INT,
   `height` INT,
   `soft_delete` TINYINT(1),
@@ -2221,10 +2207,10 @@ CREATE TABLE IF NOT EXISTS `working_dir` (
   `label_file_colour_map` VARCHAR(255),
   `jobs_to_sync` VARCHAR(255),
   `type` VARCHAR(255),
-  `default_external_map_id` INT,
+  `default_external_map_id` BIGINT,
   `access_type` VARCHAR(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT `default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
+  CONSTRAINT `working_dir_default_external_map_id_fkey` FOREIGN KEY (`default_external_map_id`) REFERENCES `external_map` (`id`),
   CONSTRAINT `working_dir_project_id_fkey` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `working_dir_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `userbase` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2234,7 +2220,7 @@ CREATE INDEX `index__working_dir_access_type_project` ON `working_dir` (`project
 
 CREATE TABLE IF NOT EXISTS `workingdir_file_link` (
   `working_dir_id` INT NOT NULL,
-  `file_id` INT NOT NULL,
+  `file_id` BIGINT NOT NULL,
   `type` VARCHAR(255),
   `committed` TINYINT(1),
   `count` INT,
