@@ -12,8 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	appservice "github.com/angelapytao/diffgram-go/application/service"
 	"github.com/angelapytao/diffgram-go/config"
+	diffdb "github.com/angelapytao/diffgram-go/infrastructure/db"
+	infratoken "github.com/angelapytao/diffgram-go/infrastructure/token"
 	"github.com/angelapytao/diffgram-go/interfaces/http/health"
+	"github.com/angelapytao/diffgram-go/interfaces/http/middleware"
 )
 
 func main() {
@@ -22,7 +26,6 @@ func main() {
 	log := logrus.New()
 	log.SetFormatter(&logrus.JSONFormatter{})
 	log.SetOutput(os.Stdout)
-
 	if cfg.Mode == "production" {
 		gin.SetMode(gin.ReleaseMode)
 		log.SetLevel(logrus.InfoLevel)
@@ -30,24 +33,22 @@ func main() {
 		log.SetLevel(logrus.DebugLevel)
 	}
 
+	gormDB, err := diffdb.NewConnection(cfg.DBDsn)
+	if err != nil {
+		log.WithError(err).Fatal("failed to connect to database")
+	}
+
+	tokenSvc := infratoken.NewJWTService(cfg.JWT)
+	appservice.Init(gormDB, tokenSvc, nil)
+
 	r := gin.New()
 	r.Use(gin.Recovery())
-	r.Use(func(c *gin.Context) {
-		c.Next()
-		log.WithFields(logrus.Fields{
-			"method": c.Request.Method,
-			"path":   c.Request.URL.Path,
-			"status": c.Writer.Status(),
-		}).Info("request")
-	})
+	r.Use(middleware.Logger(log))
 
 	health.RegisterRoutes(r)
 
 	addr := fmt.Sprintf(":%d", cfg.ServerPort)
-	srv := &http.Server{
-		Addr:    addr,
-		Handler: r,
-	}
+	srv := &http.Server{Addr: addr, Handler: r}
 
 	go func() {
 		log.WithField("addr", addr).WithField("mode", cfg.Mode).Info("api server starting")
