@@ -12,15 +12,14 @@ import (
 
 func Auth(tokenSvc domainservice.TokenService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		header := c.GetHeader("Authorization")
-		if !strings.HasPrefix(header, "Bearer ") {
+		tokenStr := tokenFromRequest(c)
+		if tokenStr == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code": util.ErrUnauthorized.Code,
 				"msg":  util.ErrUnauthorized.Msg,
 			})
 			return
 		}
-		tokenStr := strings.TrimPrefix(header, "Bearer ")
 		claims, err := tokenSvc.Verify(c.Request.Context(), tokenStr)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
@@ -32,4 +31,14 @@ func Auth(tokenSvc domainservice.TokenService) gin.HandlerFunc {
 		c.Set("claims", claims)
 		c.Next()
 	}
+}
+
+func tokenFromRequest(c *gin.Context) string {
+	if h := c.GetHeader("Authorization"); strings.HasPrefix(h, "Bearer ") {
+		return strings.TrimPrefix(h, "Bearer ")
+	}
+	if cookie, err := c.Cookie("diffgram_jwt"); err == nil && cookie != "" {
+		return cookie
+	}
+	return ""
 }

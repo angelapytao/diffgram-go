@@ -71,3 +71,16 @@ func TestAuth_ValidToken(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), `"user_id":7`)
 }
+
+func TestAuth_ValidCookie(t *testing.T) {
+	svc := new(mockTokenSvc)
+	svc.On("Verify", mock.Anything, "cookie-token").
+		Return(&domainservice.Claims{UserID: 9, Email: "c@d.com"}, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
+	req.AddCookie(&http.Cookie{Name: "diffgram_jwt", Value: "cookie-token"})
+	newRouter(svc).ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"user_id":9`)
+}
