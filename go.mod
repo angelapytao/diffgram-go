@@ -12,6 +12,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.42.0
+	github.com/testcontainers/testcontainers-go/modules/rabbitmq v0.42.0
 	github.com/volcengine/ve-tos-golang-sdk/v2 v2.9.4
 	golang.org/x/crypto v0.50.0
 	gorm.io/datatypes v1.2.7
