@@ -213,3 +213,25 @@ func TestGormActionRunRepo_ResetRunningToPending(t *testing.T) {
 	gotComplete, _ := repo.FindByID(ctx, r3.ID)
 	assert.Equal(t, "complete", gotComplete.Status, "completed runs must not be reset")
 }
+
+func TestGormActionTemplateRepo_ListByEventType(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test: requires Docker")
+	}
+	ctx := context.Background()
+	db := setupTestDB(t)
+
+	repo := infrarepo.NewActionTemplateRepository(db)
+
+	et := "annotation_created"
+	other := "task_completed"
+	runner := "webhook"
+
+	require.NoError(t, repo.Create(ctx, &entity.ActionTemplate{EventType: &et, RunnerName: &runner}))
+	require.NoError(t, repo.Create(ctx, &entity.ActionTemplate{EventType: &et, RunnerName: &runner}))
+	require.NoError(t, repo.Create(ctx, &entity.ActionTemplate{EventType: &other, RunnerName: &runner}))
+
+	list, err := repo.ListByEventType(ctx, et)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+}
