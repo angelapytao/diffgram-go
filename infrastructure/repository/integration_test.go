@@ -154,3 +154,62 @@ func TestGormProjectRepo_ListByUserPrimaryID(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, list, 2)
 }
+
+func TestGormActionRunRepo_CRUD(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test: requires Docker")
+	}
+	ctx := context.Background()
+	db := setupTestDB(t)
+
+	repo := infrarepo.NewActionRunRepository(db)
+
+	run := &entity.ActionRun{RunnerName: "webhook", Status: "pending"}
+	require.NoError(t, repo.Create(ctx, run))
+	require.Greater(t, run.ID, int64(0))
+
+	got, err := repo.FindByID(ctx, run.ID)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.Equal(t, "webhook", got.RunnerName)
+	assert.Equal(t, "pending", got.Status)
+
+	require.NoError(t, repo.UpdateStatus(ctx, run.ID, "running", nil))
+	got2, err := repo.FindByID(ctx, run.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "running", got2.Status)
+
+	errMsg := "boom"
+	require.NoError(t, repo.UpdateStatus(ctx, run.ID, "failed", &errMsg))
+	got3, err := repo.FindByID(ctx, run.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "failed", got3.Status)
+	require.NotNil(t, got3.ErrorMessage)
+	assert.Equal(t, "boom", *got3.ErrorMessage)
+}
+
+func TestGormActionRunRepo_ResetRunningToPending(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test: requires Docker")
+	}
+	ctx := context.Background()
+	db := setupTestDB(t)
+
+	repo := infrarepo.NewActionRunRepository(db)
+
+	r1 := &entity.ActionRun{RunnerName: "webhook", Status: "running"}
+	r2 := &entity.ActionRun{RunnerName: "export", Status: "running"}
+	r3 := &entity.ActionRun{RunnerName: "webhook", Status: "complete"}
+	require.NoError(t, repo.Create(ctx, r1))
+	require.NoError(t, repo.Create(ctx, r2))
+	require.NoError(t, repo.Create(ctx, r3))
+
+	count, err := repo.ResetRunningToPending(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), count)
+
+	got, _ := repo.FindByID(ctx, r1.ID)
+	assert.Equal(t, "pending", got.Status)
+	gotComplete, _ := repo.FindByID(ctx, r3.ID)
+	assert.Equal(t, "complete", gotComplete.Status, "completed runs must not be reset")
+}
