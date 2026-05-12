@@ -55,3 +55,13 @@ func TestConfig_RabbitMQDefault(t *testing.T) {
 	cfg := config.Load()
 	assert.Equal(t, "amqp://guest:guest@localhost:5672/", cfg.RabbitMQURL)
 }
+
+func TestProcessorConfigDefaults(t *testing.T) {
+	cfg := config.Load()
+	assert.Equal(t, 8082, cfg.Processor.HTTPPort)
+	assert.Equal(t, 8083, cfg.Processor.RPCPort)
+	assert.Equal(t, int64(250*1024*1024), cfg.Processor.MaxUploadSize)
+	assert.Equal(t, "ffmpeg", cfg.Processor.FFmpegPath)
+	assert.Equal(t, 60, cfg.Processor.VideoSplitDuration)
+	assert.Equal(t, 800, cfg.Processor.ThumbLargeSize)
+}

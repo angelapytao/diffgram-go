@@ -31,6 +31,22 @@ type MLRunnerConfig struct {
 	HTTPAddr string
 }
 
+type ProcessorConfig struct {
+	HTTPPort           int
+	RPCPort            int
+	WorkerPoolSize     int
+	MaxUploadSize      int64
+	TempDir            string
+	FFmpegPath         string
+	FFprobePath        string
+	GDALInfoPath       string
+	GDALTranslatePath  string
+	VideoSplitDuration int
+	VideoFPSDefault    int
+	ThumbLargeSize     int
+	ThumbSmallSize     int
+}
+
 type GCPConfig struct {
 	ProjectID         string
 	Region            string
@@ -50,6 +66,7 @@ type Config struct {
 	Worker      WorkerConfig
 	MLRunner    MLRunnerConfig
 	GCP         GCPConfig
+	Processor   ProcessorConfig
 }
 
 func Load() *Config {
@@ -88,6 +105,21 @@ func Load() *Config {
 			ServiceAccountB64: os.Getenv("GCP_SERVICE_ACCOUNT_JSON"),
 			VertexBaseURL:     envStr("VERTEX_BASE_URL", "https://"+region+"-aiplatform.googleapis.com"),
 		},
+		Processor: ProcessorConfig{
+			HTTPPort:           envInt("PROCESSOR_HTTP_PORT", 8082),
+			RPCPort:            envInt("PROCESSOR_RPC_PORT", 8083),
+			WorkerPoolSize:     envInt("PROCESSOR_WORKER_POOL_SIZE", 0),
+			MaxUploadSize:      envInt64("PROCESSOR_MAX_UPLOAD_SIZE", 250*1024*1024),
+			TempDir:            envStr("PROCESSOR_TEMP_DIR", os.TempDir()),
+			FFmpegPath:         envStr("FFMPEG_PATH", "ffmpeg"),
+			FFprobePath:        envStr("FFPROBE_PATH", "ffprobe"),
+			GDALInfoPath:       envStr("GDALINFO_PATH", "gdalinfo"),
+			GDALTranslatePath:  envStr("GDAL_TRANSLATE_PATH", "gdal_translate"),
+			VideoSplitDuration: envInt("VIDEO_SPLIT_DURATION", 60),
+			VideoFPSDefault:    envInt("VIDEO_FPS_DEFAULT", 5),
+			ThumbLargeSize:     envInt("THUMB_LARGE_SIZE", 800),
+			ThumbSmallSize:     envInt("THUMB_SMALL_SIZE", 200),
+		},
 	}
 }
 
@@ -101,6 +133,15 @@ func envStr(key, def string) string {
 func envInt(key string, def int) int {
 	if v := os.Getenv(key); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return def
+}
+
+func envInt64(key string, def int64) int64 {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
 			return n
 		}
 	}
