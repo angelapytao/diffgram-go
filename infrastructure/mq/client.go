@@ -28,3 +28,11 @@ func (c *Client) Close() error {
 	}
 	return c.conn.Close()
 }
+
+func (c *Client) Ping() error {
+	ch, err := c.conn.Channel()
+	if err != nil {
+		return err
+	}
+	return ch.Close()
+}
