@@ -57,7 +57,7 @@ func (w *WebhookRunner) Run(ctx context.Context, run *entity.ActionRun) error {
 	if err != nil {
 		return fmt.Errorf("webhook: request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("webhook: target returned status %d", resp.StatusCode)

@@ -94,7 +94,7 @@ func TestEventsConsumer_CreatesActionRunAndPublishes(t *testing.T) {
 
 	verifyCh, err := client.Channel()
 	require.NoError(t, err)
-	defer verifyCh.Close()
+	defer func() { _ = verifyCh.Close() }()
 	require.NoError(t, verifyCh.ExchangeDeclare(mq.ExchangeActions, "topic", true, false, false, false, nil))
 	_, err = verifyCh.QueueDeclare(mq.QueueActionsTriggers, true, false, false, false, nil)
 	require.NoError(t, err)
@@ -105,7 +105,7 @@ func TestEventsConsumer_CreatesActionRunAndPublishes(t *testing.T) {
 
 	pubCh, err := client.Channel()
 	require.NoError(t, err)
-	defer pubCh.Close()
+	defer func() { _ = pubCh.Close() }()
 	body, _ := json.Marshal(map[string]interface{}{
 		"event_type": "annotation_created",
 		"payload":    map[string]any{"file_id": 42},

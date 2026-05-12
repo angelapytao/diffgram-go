@@ -21,10 +21,10 @@ import (
 	"github.com/angelapytao/diffgram-go/domain/action"
 	"github.com/angelapytao/diffgram-go/domain/entity"
 	domainservice "github.com/angelapytao/diffgram-go/domain/service"
+	"github.com/angelapytao/diffgram-go/infrastructure/action_runners"
 	diffdb "github.com/angelapytao/diffgram-go/infrastructure/db"
 	"github.com/angelapytao/diffgram-go/infrastructure/mq"
 	infrarepo "github.com/angelapytao/diffgram-go/infrastructure/repository"
-	"github.com/angelapytao/diffgram-go/infrastructure/action_runners"
 	"github.com/angelapytao/diffgram-go/interfaces/consumer"
 )
 
@@ -53,7 +53,7 @@ func TestE2E_WorkerEventToCompleteRun(t *testing.T) {
 
 	sqlDB, err := sql.Open("mysql", dsn)
 	require.NoError(t, err)
-	defer sqlDB.Close()
+	defer func() { _ = sqlDB.Close() }()
 
 	_, filename, _, _ := runtime.Caller(0)
 	migrationsDir := filepath.Join(filepath.Dir(filename), "..", "..", "migrations")
@@ -72,7 +72,7 @@ func TestE2E_WorkerEventToCompleteRun(t *testing.T) {
 
 	mqClient, err := mq.NewClient(rmqURL)
 	require.NoError(t, err)
-	defer mqClient.Close()
+	defer func() { _ = mqClient.Close() }()
 
 	// 3. Seed ActionTemplate.
 	runRepo := infrarepo.NewActionRunRepository(gormDB)
@@ -122,7 +122,7 @@ func TestE2E_WorkerEventToCompleteRun(t *testing.T) {
 	// 6. Publish event message.
 	pubCh, err := mqClient.Channel()
 	require.NoError(t, err)
-	defer pubCh.Close()
+	defer func() { _ = pubCh.Close() }()
 
 	err = pubCh.ExchangeDeclare(mq.ExchangeEvents, "topic", true, false, false, false, nil)
 	require.NoError(t, err)

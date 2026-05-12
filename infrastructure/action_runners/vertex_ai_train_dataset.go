@@ -74,7 +74,7 @@ func (v *VertexAITrainDatasetRunner) Run(ctx context.Context, run *entity.Action
 	if err != nil {
 		return fmt.Errorf("vertex_ai_train_dataset: request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("vertex_ai_train_dataset: endpoint returned status %d", resp.StatusCode)

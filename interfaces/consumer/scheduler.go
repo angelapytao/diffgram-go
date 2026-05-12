@@ -25,7 +25,7 @@ func (c *SchedulerConsumer) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() { _ = ch.Close() }()
 
 	if err := ch.ExchangeDeclare(mq.ExchangeScheduler, "topic", true, false, false, false, nil); err != nil {
 		return err

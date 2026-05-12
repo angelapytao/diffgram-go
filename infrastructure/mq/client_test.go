@@ -30,6 +30,6 @@ func TestClient_DialAndChannel(t *testing.T) {
 
 	ch, err := client.Channel()
 	require.NoError(t, err)
-	defer ch.Close()
+	defer func() { _ = ch.Close() }()
 	assert.NotNil(t, ch)
 }

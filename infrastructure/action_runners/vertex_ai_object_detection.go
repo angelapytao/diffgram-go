@@ -67,7 +67,7 @@ func (v *VertexAIObjectDetectionRunner) Run(ctx context.Context, run *entity.Act
 	if err != nil {
 		return fmt.Errorf("vertex_ai_object_detection: request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("vertex_ai_object_detection: endpoint returned status %d", resp.StatusCode)

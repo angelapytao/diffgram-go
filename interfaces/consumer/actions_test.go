@@ -76,7 +76,7 @@ func TestActionsConsumer_RunsRunnerAndMarksComplete(t *testing.T) {
 
 	pubCh, err := client.Channel()
 	require.NoError(t, err)
-	defer pubCh.Close()
+	defer func() { _ = pubCh.Close() }()
 	body, _ := json.Marshal(map[string]int64{"action_run_id": run.ID})
 	require.NoError(t, pubCh.PublishWithContext(ctx, mq.ExchangeActions, mq.RoutingKeyActionsNewTrigger,
 		false, false, amqp.Publishing{ContentType: "application/json", Body: body}))
@@ -122,7 +122,7 @@ func TestActionsConsumer_MarksFailedOnRunnerError(t *testing.T) {
 
 	pubCh, err := client.Channel()
 	require.NoError(t, err)
-	defer pubCh.Close()
+	defer func() { _ = pubCh.Close() }()
 	body, _ := json.Marshal(map[string]int64{"action_run_id": run.ID})
 	require.NoError(t, pubCh.PublishWithContext(ctx, mq.ExchangeActions, mq.RoutingKeyActionsNewTrigger,
 		false, false, amqp.Publishing{ContentType: "application/json", Body: body}))

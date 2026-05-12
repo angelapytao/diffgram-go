@@ -36,7 +36,7 @@ func TestVertexAITrainDatasetRunner_Success(t *testing.T) {
 		gotPath = r.URL.Path
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"name": "projects/proj-1/locations/us-central1/operations/123"}`))
+		_, _ = w.Write([]byte(`{"name": "projects/proj-1/locations/us-central1/operations/123"}`))
 	}))
 	defer srv.Close()
 

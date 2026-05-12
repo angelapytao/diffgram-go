@@ -58,7 +58,7 @@ func (m *MLRunnerProxy) Run(ctx context.Context, run *entity.ActionRun) error {
 	if err != nil {
 		return fmt.Errorf("ml_runner_proxy: request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("ml_runner_proxy: remote returned status %d", resp.StatusCode)

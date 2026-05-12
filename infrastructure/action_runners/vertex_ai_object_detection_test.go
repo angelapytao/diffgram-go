@@ -37,7 +37,7 @@ func TestVertexAIObjectDetectionRunner_Success(t *testing.T) {
 		gotPath = r.URL.Path
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"predictions": [{"label": "cat", "score": 0.95}]}`))
+		_, _ = w.Write([]byte(`{"predictions": [{"label": "cat", "score": 0.95}]}`))
 	}))
 	defer srv.Close()
 

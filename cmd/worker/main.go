@@ -40,7 +40,7 @@ func (p *rabbitPublisher) Publish(ctx context.Context, exchange, routingKey stri
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() { _ = ch.Close() }()
 	if err := ch.ExchangeDeclare(exchange, "topic", true, false, false, false, nil); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatal("worker: failed to connect to RabbitMQ")
 	}
-	defer mqClient.Close()
+	defer func() { _ = mqClient.Close() }()
 
 	// PLACEHOLDER_MAIN_BODY
 
